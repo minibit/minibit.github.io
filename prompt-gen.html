@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Prompt Configurator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+<div class="max-w-4xl mx-auto bg-white rounded-2xl shadow p-6">
+    <h1 class="text-2xl font-bold mb-4">Video Prompt Configurator</h1>
+
+    <!-- Category buttons -->
+    <div id="categories" class="flex flex-wrap gap-2 mb-6"></div>
+
+    <!-- Gallery of options -->
+    <div id="gallery" class="grid grid-cols-3 gap-4 mb-6"></div>
+
+    <!-- Textarea for assembled prompt -->
+    <textarea id="promptArea" rows="6" class="w-full border rounded p-3 focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Your assembled prompt..."></textarea>
+</div>
+
+<script>
+    // Snippet of the full options object; only one category shown for brevity
+    const promptOptions = {
+        shot_size: [{
+            type: "medium wide shot",
+            prompt: "Frames the subject roughly from the knees up, capturing context and environment while keeping focus on the subject.",
+            flux_prompt: "Professional cinematic medium wide shot framing a subject from knees up, capturing both the person and environmental context. Balanced composition showing subject interaction with surroundings, depth of field with background elements visible. Film photography style, 35mm lens, professional lighting.",
+            cover_image: "/prompts/shot_size_medium_wide_shot.jpg"
+        }, {
+            type: "wide shot",
+            prompt: "Shows the subject at full length within a broad view of the environment; emphasises location and spatial relationships.",
+            flux_prompt: "Cinematic wide shot showing subject at full length within a broad environmental context. Emphasizes spatial relationships and location atmosphere, multiple background elements visible. Professional cinematography establishing the scene's scale and context, 24mm lens.",
+            cover_image: "/prompts/shot_size_wide_shot.jpg"
+        }, {
+            type: "medium shot",
+            prompt: "Frames the subject from the waist up, balancing focus between the person and some background context.",
+            flux_prompt: "Professional medium shot framing subject from waist up, balancing focus between person and background context. Subject engaged in activity with props, soft background blur showing environmental elements. Balanced composition, 50mm lens, natural lighting.",
+            cover_image: "/prompts/shot_size_medium_shot.jpg"
+        }, {
+            type: "medium close‑up shot",
+            prompt: "Frames the subject from the shoulders or chest up, highlighting facial expression with a hint of upper body.",
+            flux_prompt: "Cinematic medium close-up shot framing subject from chest up, highlighting facial expression with upper body context. Focus on emotional connection and character detail, shoulders and hands visible. Professional portrait lighting, 85mm lens.",
+            cover_image: "/prompts/shot_size_medium_close_up_shot.jpg"
+        }, {
+            type: "extreme close‑up shot",
+            prompt: "Focuses tightly on a small detail like eyes or hands, magnifying emotion and texture.",
+            flux_prompt: "Extreme close-up shot focusing tightly on specific detail like eyes or hands, magnifying texture and emotion. Ultra-sharp macro detail capturing intimate human elements with dramatic lighting. Professional detail photography, 100mm macro lens.",
+            cover_image: "/prompts/shot_size_extreme_close_up_shot.jpg"
+        }, {
+            type: "clean single shot",
+            prompt: "Isolates a single subject in the frame without other characters, often from mid-body up.",
+            flux_prompt: "Clean single shot isolating one subject in frame from mid-body up, no other characters visible. Complete focus on individual subject with minimal background distractions. Professional portrait cinematography, 85mm lens, controlled lighting.",
+            cover_image: "/prompts/shot_size_clean_single_shot.jpg"
+        }, {
+            type: "two shot",
+            prompt: "Includes two subjects within one frame, emphasising their relationship or interaction.",
+            flux_prompt: "Professional cinematic two shot featuring two subjects within one frame, emphasizing their relationship and interaction. Both characters equally visible and important, showing connection or dialogue between them. Balanced composition, 50mm lens, natural lighting.",
+            cover_image: "/prompts/shot_size_two_shot.jpg"
+        }, {
+            type: "three shot",
+            prompt: "Shows three subjects together in one frame, capturing group dynamics.",
+            flux_prompt: "Cinematic three shot showing three subjects together in one frame, capturing group dynamics and relationships. All three characters visible and contributing to the scene's narrative, balanced triangular composition. Professional cinematography, 35mm lens.",
+            cover_image: "/prompts/shot_size_three_shot.jpg"
+        }, {
+            type: "group shot",
+            prompt: "Frames multiple people together, conveying a sense of group or ensemble.",
+            flux_prompt: "Professional group shot framing multiple people together, conveying ensemble feeling and community atmosphere. Several subjects distributed throughout frame, each contributing to the collective narrative. Wide angle cinematography, 24mm lens.",
+            cover_image: "/prompts/shot_size_group_shot.jpg"
+        }, {
+            type: "close-up shot",
+            prompt: "Frames the subject's face or a single object closely to emphasise emotion or detail.",
+            flux_prompt: "Cinematic close-up shot framing subject's face to emphasize emotion and detail. Facial expressions and character psychology clearly visible, intimate connection with viewer. Professional portrait lighting, 85mm lens.",
+            cover_image: "/prompts/shot_size_close-up_shot.jpg"
+        }, {
+            type: "long shot",
+            prompt: "Places the subject at a distance within a large environment, showing scale and context.",
+            flux_prompt: "Cinematic long shot placing subject at distance within large environment, showing scale and context relationship. Subject appears smaller against expansive background, emphasizing their place in the wider setting. Wide angle cinematography, 16mm lens.",
+            cover_image: "/prompts/shot_size_long_shot.jpg"
+        }, {
+            type: "establishing shot",
+            prompt: "A wide shot that sets up the location and tone of a scene before focusing on the main action.",
+            flux_prompt: "Professional establishing shot setting up location and tone before main action begins. Wide view showing environment, atmosphere and context that will frame the story. Cinematic composition establishing mood and setting, 24mm lens.",
+            cover_image: "/prompts/shot_size_establishing_shot.jpg"
+        }, {
+            type: "medium long shot",
+            prompt: "Frames the subject from the knees up, allowing body language and some surroundings to be seen.",
+            flux_prompt: "Medium long shot framing subject from knees up, allowing body language and environmental context to be clearly seen. Subject positioning and posture tell story, surrounding elements provide narrative context. Professional cinematography, 35mm lens.",
+            cover_image: "/prompts/shot_size_medium_long_shot.jpg"
+        }, {
+            type: "extreme wide shot",
+            prompt: "Captures a vast area with the subject appearing very small, emphasising scale and isolation.",
+            flux_prompt: "Extreme wide shot capturing vast environment with subject appearing very small, emphasizing scale and isolation themes. Sweeping landscape or urban context dwarfing human presence, creating sense of vastness. Ultra-wide cinematography, 14mm lens.",
+            cover_image: "/prompts/shot_size_extreme_wide_shot.jpg"
+        }, {
+            type: "overhead wide shot",
+            prompt: "Looks straight down from above to show spatial patterns and arrangements across a wide area.",
+            flux_prompt: "Overhead wide shot looking straight down from above, showing spatial patterns and arrangements across wide area. Bird's eye perspective revealing geometric compositions and architectural relationships between elements. Aerial cinematography style.",
+            cover_image: "/prompts/shot_size_overhead_wide_shot.jpg"
+        }],
+        lighting_type: [{
+            type: "soft lighting",
+            prompt: "Soft, diffused light that produces gentle shadows and a flattering, even look.",
+            flux_prompt: "Professional cinematic scene with soft, diffused lighting producing gentle shadows and flattering, even illumination. Beautiful diffused light creates smooth gradations and flattering skin tones, professional photography setup with large softbox-style lighting. Warm, comfortable atmosphere.",
+            cover_image: "/prompts/lighting_type_soft_lighting.jpg"
+        }, {
+            type: "hard lighting",
+            prompt: "Direct, harsh light that creates sharp shadows and high contrast.",
+            flux_prompt: "Dramatic cinematic scene with direct, harsh hard lighting creating sharp shadows and high contrast. Strong directional light source produces distinct shadows and bold contrast between light and dark areas. Professional dramatic cinematography with hard light setup.",
+            cover_image: "/prompts/lighting_type_hard_lighting.jpg"
+        }, {
+            type: "firelighting",
+            prompt: "Warm, flickering illumination from fire that casts dynamic moving shadows.",
+            flux_prompt: "Cinematic scene illuminated by warm, flickering firelight casting dynamic moving shadows. Orange and amber flames create dancing light patterns, warm color temperature throughout. Professional fire lighting setup with authentic flame illumination and cozy atmosphere.",
+            cover_image: "/prompts/lighting_type_firelighting.jpg"
+        }, {
+            type: "fluorescent lighting",
+            prompt: "Cool, even lighting typically from fluorescent tubes; often sterile or industrial.",
+            flux_prompt: "Professional scene with cool, even fluorescent lighting creating sterile industrial atmosphere. Cool white temperature with slight green color cast, even but harsh illumination typical of office or commercial environments. Clinical, institutional lighting setup.",
+            cover_image: "/prompts/lighting_type_fluorescent_lighting.jpg"
+        }, {
+            type: "overcast lighting",
+            prompt: "Low-contrast natural light from an overcast sky producing cool, muted tones.",
+            flux_prompt: "Cinematic scene with soft overcast natural lighting producing cool, muted tones and low contrast. Diffused daylight filtering through clouds creates gentle shadows and atmospheric quality. Professional natural lighting with moody, contemplative atmosphere.",
+            cover_image: "/prompts/lighting_type_overcast_lighting.jpg"
+        }, {
+            type: "mixed lighting",
+            prompt: "Combination of different light sources or color temperatures within one scene.",
+            flux_prompt: "Professional cinematic scene combining different light sources and color temperatures. Cool daylight mixing with warm tungsten interior lighting, creating rich color contrast and environmental storytelling. Complex mixed lighting setup with multiple sources.",
+            cover_image: "/prompts/lighting_type_mixed_lighting.jpg"
+        }, {
+            type: "moonlighting",
+            prompt: "Dim, cool light from the moon that produces soft shadows and a nocturnal mood.",
+            flux_prompt: "Nocturnal cinematic scene illuminated by dim, cool moonlight producing soft shadows and mysterious mood. Silvery blue lunar illumination creates atmospheric nighttime quality with gentle contrast. Professional moonlight cinematography setup.",
+            cover_image: "/prompts/lighting_type_moonlighting.jpg"
+        }, {
+            type: "practical lighting",
+            prompt: "Light emanating from visible sources within the scene such as lamps or candles.",
+            flux_prompt: "Professional scene with practical lighting from visible sources like lamps, candles, or fixtures within the frame. Motivated lighting setup where illumination sources are part of the scene composition. Realistic environmental lighting with warm, cozy atmosphere.",
+            cover_image: "/prompts/lighting_type_practical_lighting.jpg"
+        }, {
+            type: "sunny lighting",
+            prompt: "Bright natural sunlight producing strong highlights and distinct shadows.",
+            flux_prompt: "Vibrant scene flooded with bright natural sunlight producing strong highlights and distinct shadows. Energetic atmosphere with intense solar illumination creating sharp contrast and clear definition. Professional daylight cinematography with powerful natural lighting.",
+            cover_image: "/prompts/lighting_type_sunny_lighting.jpg"
+        }, {
+            type: "underlighting",
+            prompt: "Light from below the subject that creates eerie and dramatic shadows.",
+            flux_prompt: "Dramatic scene with lighting from below the subject creating eerie and mysterious shadows. Upward illumination producing unusual shadow patterns and atmospheric mood. Professional underlighting technique with dramatic cinematic effect.",
+            cover_image: "/prompts/lighting_type_underlighting.jpg"
+        }, {
+            type: "edge lighting",
+            prompt: "Back or side lighting that outlines the subject's edges, separating them from the background.",
+            flux_prompt: "Beautiful scene with edge lighting outlining subject's silhouette and separating them from background. Rim lighting creating dramatic separation and dimensional depth with professional backlighting technique. Cinematic edge illumination effect.",
+            cover_image: "/prompts/lighting_type_edge_lighting.jpg"
+        }, {
+            type: "silhouette lighting",
+            prompt: "Strong backlighting that turns the subject into a dark outline against a bright background.",
+            flux_prompt: "Dramatic silhouette scene with strong backlighting turning subject into dark outline against bright background. Bold contrast creating striking visual impact with subject rendered as shadow shape. Professional silhouette cinematography technique.",
+            cover_image: "/prompts/lighting_type_silhouette_lighting.jpg"
+        }, {
+            type: "low contrast lighting",
+            prompt: "Lighting with minimal differences between highlights and shadows for a muted effect.",
+            flux_prompt: "Subtle scene with low contrast lighting featuring minimal differences between highlights and shadows. Muted tonal range with gentle gradations creating refined, understated aesthetic. Professional Nordic-style cinematography with soft contrast.",
+            cover_image: "/prompts/lighting_type_low_contrast_lighting.jpg"
+        }, {
+            type: "high contrast lighting",
+            prompt: "Lighting with stark differences between light and dark areas, adding drama.",
+            flux_prompt: "Intense scene with high contrast lighting featuring stark differences between light and dark areas. Bold shadows and bright highlights creating dramatic film noir aesthetic. Professional high contrast cinematography with maximum visual impact.",
+            cover_image: "/prompts/lighting_type_high_contrast_lighting.jpg"
+        }, {
+            type: "top lighting",
+            prompt: "Illumination from above the subject which can highlight features and cast shadows downward.",
+            flux_prompt: "Professional scene with top lighting illuminating subject from above, highlighting features and casting downward shadows. Natural skylight effect with overhead illumination creating dimensional modeling. Architectural lighting from ceiling sources.",
+            cover_image: "/prompts/lighting_type_top_lighting.jpg"
+        }, {
+            type: "side lighting",
+            prompt: "Illumination from the side that emphasises texture and depth.",
+            flux_prompt: "Dramatic scene with side lighting from 90-degree angle emphasizing texture and dimensional depth. Rich shadows and highlights creating sculptural quality with enhanced surface detail. Professional side illumination technique.",
+            cover_image: "/prompts/lighting_type_side_lighting.jpg"
+        }, {
+            type: "rim lighting",
+            prompt: "Light positioned behind the subject to create a glowing outline around their silhouette.",
+            flux_prompt: "Beautiful scene with rim lighting positioned behind subject creating glowing outline around silhouette. Professional studio-style separation lighting with halo effect and dramatic mood. Cinematic backlighting technique with luminous edge definition.",
+            cover_image: "/prompts/lighting_type_rim_lighting.jpg"
+        }, {
+            type: "backlighting",
+            prompt: "Light shining from behind the subject to separate them from the background.",
+            flux_prompt: "Atmospheric scene with strong backlighting shining from behind subject to separate them from background. Dramatic mood with potential lens flare effects and cinematic quality. Professional backlighting technique with environmental separation.",
+            cover_image: "/prompts/lighting_type_backlighting.jpg"
+        }, {
+            type: "candlelight",
+            prompt: "Warm, flickering light from candles creating intimate atmosphere.",
+            flux_prompt: "Romantic scene illuminated by warm, flickering candlelight creating intimate atmosphere. Soft glow with dancing shadows and warm color temperature throughout. Professional candle lighting with cozy, romantic mood and gentle illumination.",
+            cover_image: "/prompts/lighting_type_candlelight.jpg"
+        }, {
+            type: "neon lighting",
+            prompt: "Bright, colorful light from neon signs casting saturated hues.",
+            flux_prompt: "Vibrant scene lit by bright, colorful neon lighting casting saturated hues throughout. Pink and cyan colors dominating with cyberpunk aesthetic and electric atmosphere. Professional neon illumination with saturated color palette.",
+            cover_image: "/prompts/lighting_type_neon_lighting.jpg"
+        }, {
+            type: "diffused lighting",
+            prompt: "Broad, soft light created by diffusion materials to reduce harshness.",
+            flux_prompt: "Professional scene with diffused lighting created by diffusion materials to reduce harshness. Broad, soft illumination with even tones and minimal shadows. Beauty photography style lighting with perfect diffusion and flattering quality.",
+            cover_image: "/prompts/lighting_type_diffused_lighting.jpg"
+        }, {
+            type: "chiaroscuro lighting",
+            prompt: "Strong interplay of light and shadow creating dramatic contrast.",
+            flux_prompt: "Artistic scene with classical chiaroscuro lighting featuring strong interplay of light and shadow. Renaissance painting style with high contrast and sculptural quality. Professional fine art photography aesthetic with dramatic lighting contrast.",
+            cover_image: "/prompts/lighting_type_chiaroscuro_lighting.jpg"
+        }, {
+            type: "motivated lighting",
+            prompt: "Lighting setup that is justified by visible sources within the scene.",
+            flux_prompt: "Realistic scene with motivated lighting setup justified by visible sources within the frame. Natural illumination from identifiable light sources creating authentic atmosphere. Professional cinematography with logical lighting motivation and environmental realism.",
+            cover_image: "/prompts/lighting_type_motivated_lighting.jpg"
+        }, {
+            type: "gobo lighting",
+            prompt: "Light passed through patterns or templates to project shapes onto surfaces.",
+            flux_prompt: "Creative scene with gobo lighting passing light through patterns to project shapes onto surfaces. Artistic shadow patterns and textural effects creating visual interest. Professional lighting design with patterned illumination and creative shadows.",
+            cover_image: "/prompts/lighting_type_gobo_lighting.jpg"
+        }, {
+            type: "god ray lighting",
+            prompt: "Visible shafts of light streaming through particles, often from sunlight filtering through gaps.",
+            flux_prompt: "Ethereal scene with dramatic god rays featuring visible shafts of light streaming through atmospheric particles. Divine lighting effect with cinematic quality and atmospheric illumination. Professional god ray lighting with ethereal, spiritual mood.",
+            cover_image: "/prompts/lighting_type_god_ray_lighting.jpg"
+        }],
+        light_source: [{
+            type: "sunny lighting",
+            prompt: "Uses natural sunlight as the primary source of illumination.",
+            flux_prompt: "Professional cinematic scene illuminated by bright natural sunlight as the primary source. Golden hour warmth with rich color saturation, vibrant outdoor photography aesthetic. Natural solar illumination creating warm, energetic atmosphere with strong directional lighting.",
+            cover_image: "/prompts/light_source_sunny_lighting.jpg"
+        }, {
+            type: "artificial lighting",
+            prompt: "Uses man-made light sources such as lamps, bulbs or LEDs.",
+            flux_prompt: "Professional scene lit entirely by artificial light sources like LED panels, tungsten bulbs, and fluorescent fixtures. Controlled studio-style illumination with precise lighting control. Clean commercial photography setup with man-made lighting technology.",
+            cover_image: "/prompts/light_source_artificial_lighting.jpg"
+        }, {
+            type: "moonlight",
+            prompt: "Illuminated by the cool, dim light of the moon.",
+            flux_prompt: "Nocturnal cinematic scene illuminated by cool, dim moonlight as the primary source. Silvery blue lunar illumination creating mysterious nighttime atmosphere with soft, ethereal quality. Professional moonlight cinematography with natural nocturnal lighting.",
+            cover_image: "/prompts/light_source_moonlight.jpg"
+        }, {
+            type: "firelight",
+            prompt: "Lit by warm, flickering flames from a fire.",
+            flux_prompt: "Cinematic scene lit by warm, flickering flames from fire as the primary source. Orange and amber firelight creating dancing illumination patterns with cozy, rustic atmosphere. Professional fire lighting with rich warm color temperature throughout.",
+            cover_image: "/prompts/light_source_firelight.jpg"
+        }, {
+            type: "neon lighting",
+            prompt: "Illuminated by colorful neon light sources.",
+            flux_prompt: "Urban cinematic scene illuminated by colorful neon light sources as primary illumination. Vibrant pink, cyan, and electric colors creating cyberpunk aesthetic with urban nightlife atmosphere. Professional neon lighting with saturated color palette.",
+            cover_image: "/prompts/light_source_neon_lighting.jpg"
+        }, {
+            type: "candlelight",
+            prompt: "Lit softly by candles, producing a warm glow.",
+            flux_prompt: "Intimate cinematic scene lit softly by candlelight as the primary source. Multiple candles producing warm, flickering glow with romantic atmosphere. Professional candle lighting setup creating cozy, intimate mood with soft illumination.",
+            cover_image: "/prompts/light_source_candlelight.jpg"
+        }, {
+            type: "torchlight",
+            prompt: "Illuminated by handheld torches, casting moving shadows.",
+            flux_prompt: "Dramatic scene illuminated by handheld torchlight casting moving shadows as the primary source. Medieval or historical atmosphere with flickering flames creating dynamic lighting patterns. Professional torch lighting with warm orange glow and dramatic shadows.",
+            cover_image: "/prompts/light_source_torchlight.jpg"
+        }, {
+            type: "glow sticks",
+            prompt: "Lit by glowing sticks that emit colored light.",
+            flux_prompt: "Vibrant scene illuminated by glowing sticks emitting colored chemical light as primary source. Neon green, pink, and electric colors creating party or rave atmosphere. Professional glow stick lighting with bright, saturated color palette.",
+            cover_image: "/prompts/light_source_glow_sticks.jpg"
+        }],
+        color_tone: [{
+            type: "cool colors",
+            prompt: "Dominated by blues, greens and violets, creating a calm or somber mood.",
+            flux_prompt: "Professional cinematic scene dominated by cool blues, greens, and violets creating calm or somber mood. Cool color palette with blue and teal tones establishing peaceful, contemplative atmosphere. Advanced color grading with sophisticated cool temperature balance.",
+            cover_image: "/prompts/color_tone_cool_colors.jpg"
+        }, {
+            type: "saturated colors",
+            prompt: "Uses vivid, intense colors for a bold and energetic feel.",
+            flux_prompt: "Dynamic cinematic scene using vivid, intense saturated colors for bold and energetic feel. Highly saturated color palette with vibrant hues creating pop art aesthetic. Professional commercial photography with intense color grading and maximum saturation.",
+            cover_image: "/prompts/color_tone_saturated_colors.jpg"
+        }, {
+            type: "warm colors",
+            prompt: "Dominated by reds, oranges and yellows, conveying warmth or comfort.",
+            flux_prompt: "Warm cinematic scene dominated by reds, oranges, and yellows conveying warmth and comfort. Rich autumn color palette creating cozy, inviting atmosphere. Professional golden hour cinematography with warm temperature balance and comfortable mood.",
+            cover_image: "/prompts/color_tone_warm_colors.jpg"
+        }, {
+            type: "desaturated colors",
+            prompt: "Features muted or washed-out colors for a subdued tone.",
+            flux_prompt: "Subdued cinematic scene featuring muted, washed-out colors for refined tone. Desaturated color palette with subtle pastels creating Nordic cinematography aesthetic. Professional color grading with sophisticated, understated approach.",
+            cover_image: "/prompts/color_tone_desaturated_colors.jpg"
+        }, {
+            type: "mixed colors",
+            prompt: "Combines various hues, conveying diversity and complexity.",
+            flux_prompt: "Complex cinematic scene combining various hues and color temperatures, conveying diversity and visual richness. Mixed color palette with multiple temperature sources creating sophisticated complexity. Professional cinematography with nuanced color relationships.",
+            cover_image: "/prompts/color_tone_mixed_colors.jpg"
+        }, {
+            type: "monochrome",
+            prompt: "Uses variations of a single color to emphasise form and contrast.",
+            flux_prompt: "Artistic monochrome scene using variations of single color to emphasize form and contrast. Black and white cinematography focusing on texture, composition, and tonal relationships. Professional fine art photography with rich grayscale range.",
+            cover_image: "/prompts/color_tone_monochrome.jpg"
+        }, {
+            type: "pastel colors",
+            prompt: "Employs soft, pale hues to create a gentle or nostalgic mood.",
+            flux_prompt: "Gentle cinematic scene employing soft, pale pastel hues creating nostalgic or romantic mood. Delicate color palette with pale pinks, lavenders, and mint tones. Professional beauty photography with tender, dreamy aesthetic.",
+            cover_image: "/prompts/color_tone_pastel_colors.jpg"
+        }, {
+            type: "earth tones",
+            prompt: "Uses natural colors like browns, greens and ochres for an organic feel.",
+            flux_prompt: "Organic cinematic scene using natural earth tones like browns, greens, and ochres for authentic feel. Natural color palette creating harmony with environment. Professional landscape photography style with grounded, organic atmosphere.",
+            cover_image: "/prompts/color_tone_earth_tones.jpg"
+        }, {
+            type: "sepia tone",
+            prompt: "Applies a brownish tint to evoke a vintage or historic look.",
+            flux_prompt: "Vintage cinematic scene with classic sepia tone applying brownish tint for historic look. Warm brown monochrome creating nostalgic atmosphere with aged film quality. Professional vintage photography processing with timeless aesthetic.",
+            cover_image: "/prompts/color_tone_sepia_tone.jpg"
+        }, {
+            type: "neon colors",
+            prompt: "Utilises bright, fluorescent colors for a vibrant, futuristic vibe.",
+            flux_prompt: "Futuristic cinematic scene utilizing bright, fluorescent neon colors for vibrant, sci-fi vibe. Electric color palette with saturated pinks, cyans, and greens creating cyberpunk atmosphere. Professional futuristic cinematography with fluorescent lighting.",
+            cover_image: "/prompts/color_tone_neon_colors.jpg"
+        }, {
+            type: "duotone",
+            prompt: "Tints the image with two contrasting colors.",
+            flux_prompt: "Modern cinematic scene tinted with two contrasting colors for bold graphic impact. Duotone color scheme with high contrast creating contemporary art aesthetic. Professional graphic design approach with striking visual contrast.",
+            cover_image: "/prompts/color_tone_duotone.jpg"
+        }, {
+            type: "vintage tones",
+            prompt: "Employs faded or muted colors reminiscent of old photographs.",
+            flux_prompt: "Nostalgic cinematic scene employing faded, muted colors reminiscent of old photographs. Vintage color grading with reduced saturation creating retro atmosphere. Professional film photography aesthetic with aged, timeless quality.",
+            cover_image: "/prompts/color_tone_vintage_tones.jpg"
+        }],
+        camera_angle: [{
+            type: "over‑the‑shoulder shot",
+            prompt: "Camera looks over the shoulder of one character at another, often used in dialogue.",
+            flux_prompt: "Professional over-the-shoulder shot with camera positioned behind one character looking at another, commonly used in dialogue scenes. Cinematic perspective showing character interaction and relationship dynamics. Classic dialogue cinematography technique, 50mm lens.",
+            cover_image: "/prompts/camera_angle_over_the_shoulder_shot.jpg"
+        }, {
+            type: "high angle shot",
+            prompt: "Camera positioned above the subject looking down to make them appear smaller.",
+            flux_prompt: "Professional high angle shot with camera positioned above subject looking down, making them appear smaller and more vulnerable. Psychological cinematography creating sense of powerlessness or contemplation. Dramatic perspective with controlled lighting, 35mm lens.",
+            cover_image: "/prompts/camera_angle_high_angle_shot.jpg"
+        }, {
+            type: "low angle shot",
+            prompt: "Camera positioned below the subject looking up to make them appear powerful.",
+            flux_prompt: "Dynamic low angle shot with camera positioned below subject looking up, making them appear powerful and dominant. Heroic cinematography creating sense of strength and authority. Professional dramatic perspective with strong lighting, 24mm wide lens.",
+            cover_image: "/prompts/camera_angle_low_angle_shot.jpg"
+        }, {
+            type: "dutch angle shot",
+            prompt: "Camera tilted off-axis to create a sense of unease or tension.",
+            flux_prompt: "Unsettling Dutch angle shot with camera tilted off-axis creating sense of unease and tension. Psychological cinematography with diagonal composition suggesting instability. Professional thriller-style perspective with dramatic off-kilter framing.",
+            cover_image: "/prompts/camera_angle_dutch_angle_shot.jpg"
+        }, {
+            type: "aerial shot",
+            prompt: "Camera positioned high in the air to provide an expansive view.",
+            flux_prompt: "Expansive aerial shot with camera positioned high in the air providing sweeping overview. Drone cinematography style revealing environmental context and spatial relationships. Professional elevated perspective with ultra-wide coverage, 14mm lens.",
+            cover_image: "/prompts/camera_angle_aerial_shot.jpg"
+        }, {
+            type: "worm's-eye view",
+            prompt: "Camera positioned at ground level looking up to emphasise height or stature.",
+            flux_prompt: "Dramatic worm's-eye view with camera positioned at ground level looking up to emphasize height and stature. Bold architectural perspective creating sense of grandeur and scale. Professional low-ground cinematography, 16mm ultra-wide lens.",
+            cover_image: "/prompts/camera_angle_worm's-eye_view.jpg"
+        }, {
+            type: "bird's-eye view",
+            prompt: "Camera positioned directly overhead to show layout and spatial relationships.",
+            flux_prompt: "Perfect bird's-eye view with camera positioned directly overhead showing layout and spatial relationships. Geometric composition revealing patterns and arrangements from above. Professional overhead cinematography with symmetrical framing.",
+            cover_image: "/prompts/camera_angle_bird's-eye_view.jpg"
+        }, {
+            type: "point-of-view shot",
+            prompt: "Camera shows the scene from a character's perspective.",
+            flux_prompt: "Immersive point-of-view shot showing scene from character's exact perspective and eye level. First-person subjective cinematography creating intimate connection with viewer. Natural field of view with realistic framing and authentic perspective.",
+            cover_image: "/prompts/camera_angle_point-of-view_shot.jpg"
+        }, {
+            type: "overhead shot",
+            prompt: "Camera looks straight down on the subject or scene from above.",
+            flux_prompt: "Clean overhead shot with camera looking straight down on subject or scene from above. Flat lay photography style with professional top-down perspective. Even lighting and geometric composition showing spatial arrangements.",
+            cover_image: "/prompts/camera_angle_overhead_shot.jpg"
+        }, {
+            type: "reverse shot",
+            prompt: "Camera switches to the opposite side to show the other character's perspective in a dialogue.",
+            flux_prompt: "Professional reverse shot switching camera to opposite side showing other character's perspective in dialogue. Classic shot-reverse-shot cinematography technique maintaining visual continuity. Consistent lighting and framing across the reverse angle.",
+            cover_image: "/prompts/camera_angle_reverse_shot.jpg"
+        }, {
+            type: "extreme low angle shot",
+            prompt: "Camera extremely low looking up to exaggerate the height and power of the subject.",
+            flux_prompt: "Dramatic extreme low angle shot with camera at floor level looking up to exaggerate height and power. Bold perspective creating maximum impact and dominance. Professional ultra-wide cinematography with intentional distortion, 14mm lens.",
+            cover_image: "/prompts/camera_angle_extreme_low_angle_shot.jpg"
+        }, {
+            type: "extreme high angle shot",
+            prompt: "Camera extremely high looking down to make subjects appear tiny and vulnerable.",
+            flux_prompt: "Dramatic extreme high angle shot with camera at great height looking down to make subjects appear tiny and vulnerable. Emphasizes environmental scale and human fragility. Professional aerial perspective with maximum height differential.",
+            cover_image: "/prompts/camera_angle_extreme_high_angle_shot.jpg"
+        }, {
+            type: "split diopter shot",
+            prompt: "Camera uses a split diopter lens to keep both foreground and background elements in focus simultaneously.",
+            flux_prompt: "Technical split diopter shot keeping both foreground and background elements in sharp focus simultaneously. Advanced cinematography technique using specialized lens filters. Professional precision framing with complex depth of field control, 50mm lens.",
+            cover_image: "/prompts/camera_angle_split_diopter_shot.jpg"
+        }],
+        lens: [{
+            type: "medium lens",
+            prompt: "Uses a focal length around 50mm to approximate human perspective.",
+            flux_prompt: "Professional scene shot with 50mm medium lens approximating natural human eye perspective. Normal focal length creating realistic depth of field and natural perspective. Classic portrait photography with balanced composition, f/1.8 aperture.",
+            cover_image: "/prompts/lens_medium_lens.jpg"
+        }, {
+            type: "wide lens",
+            prompt: "Employs a short focal length to capture a wide field of view and emphasise depth.",
+            flux_prompt: "Expansive scene shot with 24mm wide lens capturing broad field of view and emphasizing environmental depth. Professional architectural photography with enhanced spatial context. Wide angle perspective with sharp detail, f/8 aperture.",
+            cover_image: "/prompts/lens_wide_lens.jpg"
+        }, {
+            type: "telephoto lens",
+            prompt: "Uses a long focal length to magnify distant subjects and compress space.",
+            flux_prompt: "Intimate scene shot with 200mm telephoto lens magnifying distant subjects with beautiful space compression. Compressed perspective with creamy bokeh and shallow depth of field. Professional portrait photography with excellent subject isolation, f/4 aperture.",
+            cover_image: "/prompts/lens_telephoto_lens.jpg"
+        }, {
+            type: "fisheye lens",
+            prompt: "An ultra-wide lens that creates a spherical, distorted perspective.",
+            flux_prompt: "Creative scene shot with 8mm fisheye lens creating spherical, distorted perspective. Ultra-wide 180-degree curved view with dramatic barrel distortion. Artistic photography with unique visual impact and creative distortion effects.",
+            cover_image: "/prompts/lens_fisheye_lens.jpg"
+        }, {
+            type: "wide‑angle lens",
+            prompt: "A lens with a short focal length that captures a broad scene without extreme distortion.",
+            flux_prompt: "Professional scene shot with 16mm wide-angle lens capturing broad scene without extreme distortion. Clean wide perspective with minimal barrel distortion and sharp detail throughout. Landscape photography style with expansive environmental view, f/11 aperture.",
+            cover_image: "/prompts/lens_wide_angle_lens.jpg"
+        }, {
+            type: "macro lens",
+            prompt: "Designed for close-up photography to capture fine details.",
+            flux_prompt: "Detailed close-up scene shot with 100mm macro lens designed for capturing fine details at 1:1 magnification. Intricate texture and detail photography with professional macro technique. Sharp close-up focus with beautiful detail rendering, f/5.6 aperture.",
+            cover_image: "/prompts/lens_macro_lens.jpg"
+        }, {
+            type: "tilt-shift lens",
+            prompt: "Allows tilting or shifting the lens to control perspective and selective focus.",
+            flux_prompt: "Creative scene shot with tilt-shift lens allowing perspective control and selective focus planes. Unique miniature effect with controlled depth of field and perspective correction. Professional architectural photography with artistic focal plane manipulation.",
+            cover_image: "/prompts/lens_tilt-shift_lens.jpg"
+        }, {
+            type: "anamorphic lens",
+            prompt: "Squeezes a wide image onto a narrower format, producing cinematic flares and oval bokeh.",
+            flux_prompt: "Cinematic scene shot with anamorphic lens creating characteristic oval bokeh and horizontal lens flares. Professional film production quality with 2.39:1 aspect ratio. Beautiful anamorphic artifacts and cinematic wide format presentation.",
+            cover_image: "/prompts/lens_anamorphic_lens.jpg"
+        }, {
+            type: "soft focus lens",
+            prompt: "Intentionally blurs the image to create a dreamy or romantic effect.",
+            flux_prompt: "Dreamy scene shot with soft focus lens intentionally creating romantic, ethereal effect. Gentle overall blur with sharp center focus and vintage lens character. Professional portrait photography with soft, romantic atmosphere.",
+            cover_image: "/prompts/lens_soft_focus_lens.jpg"
+        }, {
+            type: "zoom lens",
+            prompt: "Has a variable focal length, allowing transitions from wide to telephoto within a single shot.",
+            flux_prompt: "Versatile scene shot with 24-70mm zoom lens demonstrating variable focal length capability. Professional flexibility allowing transitions from wide environmental to telephoto compression within single lens. Sharp throughout zoom range with consistent quality.",
+            cover_image: "/prompts/lens_zoom_lens.jpg"
+        }],
+        camera_movement_basic: [{
+            type: "camera moves to the left",
+            prompt: "The camera travels laterally to the left, revealing new elements in the scene.",
+            flux_prompt: "Professional cinematic scene with camera traveling laterally to the left, revealing new elements in the scene. Smooth horizontal pan movement discovering additional environmental details and spatial relationships. Fluid cinematography with controlled lateral motion.",
+            cover_image: "/prompts/camera_movement_basic_camera_moves_to_the_left.jpg"
+        }, {
+            type: "camera tilts up",
+            prompt: "The camera pivots upward to reveal something above the current frame.",
+            flux_prompt: "Dynamic scene with camera pivoting upward to reveal elements above the current frame. Vertical tilt movement discovering new visual information in upper portion of scene. Professional cinematography with smooth upward camera motion.",
+            cover_image: "/prompts/camera_movement_basic_camera_tilts_up.jpg"
+        }, {
+            type: "camera pushes in for a close‑up",
+            prompt: "The camera moves forward toward the subject to emphasize detail.",
+            flux_prompt: "Intimate scene with camera moving forward toward subject to emphasize detail and emotion. Progressive push-in movement from wide to close-up revealing character and emotional nuance. Professional dolly cinematography with controlled forward motion.",
+            cover_image: "/prompts/camera_movement_basic_camera_pushes_in_for_a_close_up.jpg"
+        }, {
+            type: "camera pulls back",
+            prompt: "The camera moves backward to show more of the environment.",
+            flux_prompt: "Expansive scene with camera moving backward to reveal more of the environment and spatial context. Pull-back movement from intimate to wide perspective showing environmental relationships. Professional cinematography with controlled backward motion.",
+            cover_image: "/prompts/camera_movement_basic_camera_pulls_back.jpg"
+        }, {
+            type: "static shot",
+            prompt: "The camera remains fixed in one position without any movement.",
+            flux_prompt: "Stable scene with camera remaining fixed in one position without any movement. Static shot emphasizing composition and allowing action to unfold within frame. Professional tripod-mounted cinematography with locked-off framing.",
+            cover_image: "/prompts/camera_movement_basic_static_shot.jpg"
+        }],
+        camera_movement_advanced: [{
+            type: "handheld camera",
+            prompt: "The camera is operated without stabilisation, creating a natural, shaky feel.",
+            flux_prompt: "Professional scene shot with handheld camera creating natural, documentary-style movement without stabilization. Subtle shake and organic feel providing realistic human perspective. Authentic cinematography with natural camera movement and documentary aesthetic.",
+            cover_image: "/prompts/camera_movement_advanced_handheld_camera.jpg"
+        }, {
+            type: "tracking shot",
+            prompt: "The camera moves alongside a moving subject to maintain framing.",
+            flux_prompt: "Dynamic tracking shot with camera moving alongside moving subject to maintain consistent framing. Smooth lateral cinematography following action and maintaining visual continuity. Professional tracking movement with precise subject following.",
+            cover_image: "/prompts/camera_movement_advanced_tracking_shot.jpg"
+        }, {
+            type: "steadycam",
+            prompt: "Uses a stabilising rig to achieve smooth, continuous movement.",
+            flux_prompt: "Fluid scene shot with Steadicam stabilizing rig achieving smooth, continuous movement. Perfectly stable cinematography without shake or vibration. Professional stabilized system creating seamless flowing camera motion through space.",
+            cover_image: "/prompts/camera_movement_advanced_steadycam.jpg"
+        }, {
+            type: "crane shot",
+            prompt: "The camera is mounted on a crane to move up, down, or sweep over a scene.",
+            flux_prompt: "Dramatic crane shot with camera mounted on crane moving up, down, and sweeping over scene. Professional elevated cinematography with vertical and horizontal movement capabilities. Sweeping crane motion revealing environmental context and scale.",
+            cover_image: "/prompts/camera_movement_advanced_crane_shot.jpg"
+        }, {
+            type: "dolly zoom",
+            prompt: "Combines moving the camera with a zoom to distort perspective while keeping the subject the same size.",
+            flux_prompt: "Dramatic dolly zoom shot combining camera movement with zoom to distort perspective while keeping subject same size. Vertigo effect created by moving camera while zooming. Professional Hitchcock-style cinematography technique with perspective distortion.",
+            cover_image: "/prompts/camera_movement_advanced_dolly_zoom.jpg"
+        }],
+        time_of_day: [{
+            type: "dawn time",
+            prompt: "The period just before sunrise featuring cool tones and long shadows.",
+            flux_prompt: "Serene dawn scene with early morning light just before sunrise featuring cool tones and long shadows. Cool blue and purple atmospheric lighting creating peaceful, quiet mood. Professional dawn cinematography with soft pre-sunrise illumination and tranquil atmosphere.",
+            cover_image: "/prompts/time_of_day_dawn_time.jpg"
+        }, {
+            type: "golden hour",
+            prompt: "The hour after sunrise or before sunset providing soft, warm light.",
+            flux_prompt: "Magical golden hour scene with warm, soft sunlight providing flattering illumination. Rich orange and gold tones creating romantic, cinematic atmosphere. Professional golden hour cinematography with beautiful warm lighting and dreamy quality.",
+            cover_image: "/prompts/time_of_day_golden_hour.jpg"
+        }, {
+            type: "blue hour",
+            prompt: "The brief twilight period with cool blue ambient light.",
+            flux_prompt: "Atmospheric blue hour scene during brief twilight period with cool blue ambient light. Deep blue tones and ethereal illumination creating moody, cinematic quality. Professional twilight cinematography with mysterious blue atmosphere and urban lighting.",
+            cover_image: "/prompts/time_of_day_blue_hour.jpg"
+        }, {
+            type: "midday",
+            prompt: "When the sun is high overhead, producing strong direct light and short shadows.",
+            flux_prompt: "Vibrant midday scene with sun high overhead producing strong direct light and short shadows. High contrast lighting with vibrant colors and energetic atmosphere. Professional daytime cinematography with intense natural illumination and bright, clear quality.",
+            cover_image: "/prompts/time_of_day_midday.jpg"
+        }, {
+            type: "night time",
+            prompt: "After dark, illuminated by artificial light sources or very low natural light.",
+            flux_prompt: "Intimate nighttime scene illuminated by artificial light sources with very low natural light. Warm interior lighting contrasting with dark exterior creating cozy atmosphere. Professional night cinematography with atmospheric artificial lighting and intimate mood.",
+            cover_image: "/prompts/time_of_day_night_time.jpg"
+        }],
+        motion: [{
+            type: "running",
+            prompt: "Rapid foot movement conveying urgency or athleticism.",
+            flux_prompt: "Dynamic scene featuring rapid foot movement conveying urgency and athleticism. High-energy motion with athletic blur and swift movement dynamics. Professional sports cinematography capturing running motion with dynamic energy and speed.",
+            cover_image: "/prompts/motion_running.jpg"
+        }, {
+            type: "street dance",
+            prompt: "Dynamic and rhythmic movement performed by dancers in an urban setting.",
+            flux_prompt: "Energetic scene featuring dynamic and rhythmic street dance movement in urban setting. Hip-hop style choreography with fluid motion and beat-synchronized gestures. Professional dance cinematography capturing urban dance culture and rhythmic expression.",
+            cover_image: "/prompts/motion_street_dance.jpg"
+        }, {
+            type: "skateboarding",
+            prompt: "Movement that involves riding and performing tricks on a skateboard.",
+            flux_prompt: "Dynamic scene featuring skateboarding movement with tricks and board control. Urban skateboarding cinematography with creative angles capturing fluid motion and technical skills. Professional action sports filming with dynamic movement and athletic performance.",
+            cover_image: "/prompts/motion_skateboarding.jpg"
+        }, {
+            type: "ballet dance",
+            prompt: "Classical dance form characterised by graceful, flowing movements.",
+            flux_prompt: "Elegant scene featuring classical ballet dance with graceful, flowing movements. Beautiful choreography with refined gestures and artistic positions. Professional dance cinematography capturing the grace and beauty of classical ballet form.",
+            cover_image: "/prompts/motion_ballet_dance.jpg"
+        }, {
+            type: "swimming",
+            prompt: "Propelling the body through water using coordinated strokes.",
+            flux_prompt: "Fluid scene featuring swimming motion with coordinated strokes and aquatic movement. Professional underwater cinematography style capturing the flow and rhythm of swimming. Dreamlike aquatic movements with coordinated body mechanics and fluid dynamics.",
+            cover_image: "/prompts/motion_swimming.jpg"
+        }],
+        visual_effects: [{
+            type: "slow motion",
+            prompt: "Slows down action to highlight detail and movement.",
+            flux_prompt: "Cinematic scene captured in slow motion to highlight detail and graceful movement. High-speed cinematography revealing hidden beauty in motion with frozen temporal moments. Professional slow-motion technique at high frame rates creating ethereal quality.",
+            cover_image: "/prompts/visual_effects_slow_motion.jpg"
+        }, {
+            type: "motion blur",
+            prompt: "Creates streaks of moving objects to convey speed.",
+            flux_prompt: "Dynamic scene with artistic motion blur creating streaks of moving objects to convey speed and energy. Kinetic visual effects with controlled blur techniques creating sense of movement. Professional panning cinematography with intentional motion blur effects.",
+            cover_image: "/prompts/visual_effects_motion_blur.jpg"
+        }, {
+            type: "time‑lapse",
+            prompt: "Captures movement over long periods and plays it back at high speed.",
+            flux_prompt: "Time-lapse sequence capturing movement over long periods and playing back at high speed. Compressed time showing environmental changes and human activity flow. Professional time-lapse cinematography revealing temporal patterns and passage of time.",
+            cover_image: "/prompts/visual_effects_time_lapse.jpg"
+        }, {
+            type: "lens flare",
+            prompt: "Optical artifacts created when bright light hits the lens.",
+            flux_prompt: "Cinematic scene with beautiful lens flare effects created when bright light hits the camera lens. Rainbow streaks and optical artifacts adding cinematic quality and atmosphere. Professional cinematography with natural lens flares creating visual interest.",
+            cover_image: "/prompts/visual_effects_lens_flare.jpg"
+        }, {
+            type: "film grain",
+            prompt: "Adds textured grain to emulate analogue film stock.",
+            flux_prompt: "Vintage scene with authentic film grain texture emulating analog film stock. Rich organic grain structure creating nostalgic, vintage aesthetic. Professional film photography processing with analog texture and warm, cinematic quality.",
+            cover_image: "/prompts/visual_effects_film_grain.jpg"
+        }],
+        stylization_visual_style: [{
+            type: "cyberpunk style",
+            prompt: "A neon-lit, dystopian aesthetic blending advanced tech with gritty streets.",
+            flux_prompt: "Futuristic cyberpunk scene with neon-lit, dystopian aesthetic blending advanced technology with gritty urban atmosphere. Electric blue and pink lighting with holographic elements and high-tech visual effects. Professional sci-fi cinematography with cyberpunk styling.",
+            cover_image: "/prompts/stylization_visual_style_cyberpunk_style.jpg"
+        }, {
+            type: "noir style",
+            prompt: "High-contrast, shadowy visuals inspired by classic film noir.",
+            flux_prompt: "Classic film noir scene with high-contrast, shadowy visuals inspired by 1940s detective movies. Dramatic black and white cinematography with venetian blind shadows and moody lighting. Professional noir aesthetic with classic Hollywood styling.",
+            cover_image: "/prompts/stylization_visual_style_noir_style.jpg"
+        }, {
+            type: "2D anime style",
+            prompt: "Flat-shaded animation in the Japanese anime tradition.",
+            flux_prompt: "Stylized 2D anime scene with flat-shaded animation in Japanese tradition. Cel-shaded coloring with large expressive character features and detailed backgrounds. Professional anime production quality with traditional Japanese animation aesthetic.",
+            cover_image: "/prompts/stylization_visual_style_2D_anime_style.jpg"
+        }, {
+            type: "oil painting style",
+            prompt: "Visuals appear as if painted with thick oil paints and visible brush strokes.",
+            flux_prompt: "Artistic oil painting scene with thick paint texture and visible brush strokes creating fine art aesthetic. Classical painting technique with rich impasto and painterly quality. Professional fine art style with traditional oil painting characteristics.",
+            cover_image: "/prompts/stylization_visual_style_oil_painting_style.jpg"
+        }, {
+            type: "pixel art style",
+            prompt: "Rendered with blocky pixels reminiscent of retro video games.",
+            flux_prompt: "Retro pixel art scene rendered with blocky pixels reminiscent of classic video games. 8-bit aesthetic with limited color palette and retro gaming graphics. Professional indie game art style with nostalgic arcade game characteristics.",
+            cover_image: "/prompts/stylization_visual_style_pixel_art_style.jpg"
+        }],
+        character_emotion: [{
+            type: "happy",
+            prompt: "Shows joy and positivity through facial expressions and body language.",
+            flux_prompt: "Joyful character scene showing happiness and positivity through bright facial expressions and uplifting body language. Genuine smile, sparkling eyes, and positive demeanor creating warm, cheerful atmosphere. Professional emotional cinematography capturing authentic happiness and joy.",
+            cover_image: "/prompts/character_emotion_happy.jpg"
+        }, {
+            type: "sadly",
+            prompt: "Conveys sadness and melancholy in demeanor.",
+            flux_prompt: "Melancholic character scene conveying sadness and emotional depth through expressive facial features and body language. Downcast eyes, drooping shoulders, and somber demeanor creating touching atmosphere. Professional emotional portrait cinematography capturing genuine sadness.",
+            cover_image: "/prompts/character_emotion_sadly.jpg"
+        }, {
+            type: "fear",
+            prompt: "Depicts fear and apprehension, often with wide eyes or trembling.",
+            flux_prompt: "Tense character scene depicting fear and apprehension with wide eyes and nervous body language. Frightened expression, tense posture, and trembling hands creating anxious atmosphere. Professional thriller cinematography with dramatic lighting emphasizing fear.",
+            cover_image: "/prompts/character_emotion_fear.jpg"
+        }, {
+            type: "surprised",
+            prompt: "Shows shock or astonishment with wide eyes and raised eyebrows.",
+            flux_prompt: "Dynamic character scene showing shock and astonishment with wide eyes and raised eyebrows. Surprised expression, open mouth, and sudden body movement capturing moment of unexpected revelation. Professional dramatic cinematography emphasizing surprise reaction.",
+            cover_image: "/prompts/character_emotion_surprised.jpg"
+        }, {
+            type: "determined",
+            prompt: "Displays resolve and persistence.",
+            flux_prompt: "Powerful character scene displaying resolve and persistence through strong facial expression and purposeful body language. Focused gaze, set jaw, and determined posture showing unwavering strength. Professional character study cinematography capturing determination.",
+            cover_image: "/prompts/character_emotion_determined.jpg"
+        }],
+        composition: [{
+            type: "center composition",
+            prompt: "Places the subject directly in the middle of the frame for emphasis.",
+            flux_prompt: "Professional center composition placing subject directly in the middle of frame for emphasis and visual impact. Symmetrical framing with balanced weight distribution creating focused attention. Classic cinematography technique with centered subject placement.",
+            cover_image: "/prompts/composition_center_composition.jpg"
+        }, {
+            type: "rule of thirds",
+            prompt: "Aligns subjects along imaginary horizontal and vertical thirds lines.",
+            flux_prompt: "Dynamic composition using rule of thirds with subjects aligned along imaginary horizontal and vertical grid lines. Professional cinematography creating balanced, visually pleasing arrangement with natural eye movement flow. Classic composition technique.",
+            cover_image: "/prompts/composition_rule_of_thirds.jpg"
+        }, {
+            type: "symmetrical composition",
+            prompt: "Uses mirrored elements to create symmetry across an axis.",
+            flux_prompt: "Elegant symmetrical composition using mirrored elements across central axis for perfect balance. Architectural cinematography with precise symmetry creating harmonious visual equilibrium. Professional framing with geometric perfection and balanced design.",
+            cover_image: "/prompts/composition_symmetrical_composition.jpg"
+        }, {
+            type: "leading lines",
+            prompt: "Uses lines in the scene to guide the viewer's eye to the subject.",
+            flux_prompt: "Strategic composition using leading lines in the scene to guide viewer's eye toward main subject. Architectural elements, edges, and patterns creating visual pathways and directional flow. Professional cinematography with intentional line usage.",
+            cover_image: "/prompts/composition_leading_lines.jpg"
+        }, {
+            type: "negative space",
+            prompt: "Leaves large empty areas around the subject to draw attention to it.",
+            flux_prompt: "Minimalist composition with abundant negative space around subject to draw focused attention. Large empty areas creating breathing room and emphasizing subject importance. Professional minimalist cinematography with strategic use of emptiness.",
+            cover_image: "/prompts/composition_negative_space.jpg"
+        }]
+    };
+
+    const categoriesContainer = document.getElementById('categories');
+    const galleryContainer    = document.getElementById('gallery');
+    const promptArea          = document.getElementById('promptArea');
+
+    const categoryButtons = {};
+    let currentCategory = null;
+
+    // Render category buttons
+    Object.keys(promptOptions).forEach(cat => {
+        const btn = document.createElement('button');
+        btn.textContent = cat.replace('_', ' ');
+        btn.className = 'px-4 py-2 bg-indigo-500 text-white rounded-xl hover:bg-indigo-600 focus:outline-none';
+        btn.addEventListener('click', () => selectCategory(cat));
+        categoriesContainer.appendChild(btn);
+        categoryButtons[cat] = btn;
+    });
+
+    function selectCategory(catKey) {
+        currentCategory = catKey;
+        // Highlight active category button
+        Object.values(categoryButtons).forEach(b => b.classList.remove('ring-2', 'ring-indigo-400'));
+        categoryButtons[catKey].classList.add('ring-2', 'ring-indigo-400');
+        renderGallery();
+    }
+
+    function renderGallery() {
+        galleryContainer.innerHTML = '';
+        if (!currentCategory) return;
+        promptOptions[currentCategory].forEach(item => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'relative cursor-pointer border rounded-lg overflow-hidden';
+            wrapper.innerHTML = `
+          <img src="${item.cover_image}" alt="${item.type}" class="w-full h-32 object-cover">
+          <div class="p-2 text-center font-medium">${item.type}</div>
+        `;
+            wrapper.addEventListener('click', () => toggleSelect(item));
+            galleryContainer.appendChild(wrapper);
+        });
+        updateHighlights();
+    }
+
+    function toggleSelect(item) {
+        const { prompt: text } = item;
+        if (promptArea.value.includes(text)) {
+            // Deselect current option
+            promptArea.value = promptArea.value
+                .replace(text, '')
+                .trim()
+                .replace(/\s+/g, ' ');
+        } else {
+            // Remove other selected in this category
+            promptOptions[currentCategory].forEach(other => {
+                if (other.prompt !== text && promptArea.value.includes(other.prompt)) {
+                    promptArea.value = promptArea.value
+                        .replace(other.prompt, '')
+                        .trim()
+                        .replace(/\s+/g, ' ');
+                }
+            });
+            // Select new
+            promptArea.value = (promptArea.value.trim() + (promptArea.value.trim() ? ' ' : '') + text).trim();
+        }
+        updateHighlights();
+    }
+
+    function updateHighlights() {
+        if (!currentCategory) return;
+        // Highlight gallery items
+        Array.from(galleryContainer.children).forEach((el, idx) => {
+            const item = promptOptions[currentCategory][idx];
+            if (promptArea.value.includes(item.prompt)) {
+                el.classList.add('ring-4', 'ring-indigo-300');
+            } else {
+                el.classList.remove('ring-4', 'ring-indigo-300');
+            }
+        });
+        // Update category buttons color
+        Object.keys(promptOptions).forEach(cat => {
+            const btn = categoryButtons[cat];
+            const hasSelection = promptOptions[cat].some(opt => promptArea.value.includes(opt.prompt));
+            if (hasSelection) {
+                btn.classList.remove('bg-indigo-500', 'hover:bg-indigo-600');
+                btn.classList.add('bg-green-500', 'hover:bg-green-600');
+            } else {
+                btn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                btn.classList.add('bg-indigo-500', 'hover:bg-indigo-600');
+            }
+        });
+    }
+
+    // Update highlights if the textarea is edited manually
+    promptArea.addEventListener('input', updateHighlights);
+</script>
+</body>
+</html>
